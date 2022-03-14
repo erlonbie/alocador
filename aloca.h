@@ -1,6 +1,7 @@
 #define BESTFIT 0
 #define FIRSTFIT 1
 #define NEXTFIT 2
+#include <vector>
 // comentario teste
 //TAMANHO MÁXIMO DE ALOCACAO: 65535 (maior unsigned short)
 
@@ -9,8 +10,10 @@
 class meualoc{
 	private:
 		char* memoria; //char* pois eh byte a byte
-		int politica;
-		std::vector<std::pair<char *, int> livre;
+		int politica, tamanhoMemoria;
+		std::vector<std::pair<char *, int>> livre;
+		int nextLivre;
+
 
 	public:
 		//tamanhoMemoria vai definir o tamanho da memória que o alocador vai utilizar
@@ -34,6 +37,10 @@ class meualoc{
 		char * nextfit(unsigned short tamanho);
 
 		char * firstfit(unsigned short tamanho);
+
+		char * aloca_aux(int pos_livre, unsigned short tamanho);
+
+		void coalesce();
 
 		~meualoc();
 

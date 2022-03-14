@@ -4,9 +4,14 @@
 
 //TAMANHO MÁXIMO DE ALOCACAO: 65535 (maior unsigned short)
 
+#define MAGICO 0xFBF3
+
 class meualoc{
-	char* memoria; //char* pois eh byte a byte
-	int politica;
+	private:
+		char* memoria; //char* pois eh byte a byte
+		int politica;
+		std::vector<std::pair<char *, int> livre;
+
 	public:
 		//tamanhoMemoria vai definir o tamanho da memória que o alocador vai utilizar
 		//politicaMem define como escolher o bloco de onde saira a memória
@@ -23,6 +28,12 @@ class meualoc{
 
 		//Imprime o numero de elementos na lista de vazios, o maior e a media de tamanhos dos blocos vazios
 		void imprimeDados();
+
+		char * bestfit(unsigned short tamanho);
+
+		char * nextfit(unsigned short tamanho);
+
+		char * firstfit(unsigned short tamanho);
 
 		~meualoc();
 

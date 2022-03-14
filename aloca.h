@@ -1,7 +1,7 @@
 #define BESTFIT 0
 #define FIRSTFIT 1
 #define NEXTFIT 2
-
+// comentario teste
 //TAMANHO MÁXIMO DE ALOCACAO: 65535 (maior unsigned short)
 
 #define MAGICO 0xFBF3

@@ -20,11 +20,11 @@ char * meualoc::aloca(unsigned short tamanho) {
 			break;
 		case FIRSTFIT:
 			std::cout << "firstfit" << std::endl;
-			return nextfit(tamanho);
+			return firstfit(tamanho);
 			break;
 		case NEXTFIT:
 			std::cout << "nextfit" << std::endl;
-			return firstfit(tamanho);
+			return nextfit(tamanho);
 			break;
 		default:
 			std::cout << "error" << std::endl;
@@ -33,18 +33,18 @@ char * meualoc::aloca(unsigned short tamanho) {
 }
 
 void seta_tamanho(uint tamanho, char * pos) {
-	((*(pos)) |= (tamanho & 0x00FF)); 
-	(*(pos + 1) |= ((tamanho & 0xFF00) >> 8));
+	(*(pos) |= ((tamanho & 0xFF00) >> 8));
+	((*(pos + 1)) |= (tamanho & 0x00FF)); 
 } 
 
 void seta_magico(uint tamanho, char * pos) {
-	((*(pos + 2)) |= (tamanho & 0x00FF)); 
-	(*(pos + 3) |= ((tamanho & 0xFF00) >> 8));
+	(*(pos + 2) |= ((tamanho & 0xFF00) >> 8));
+	((*(pos + 3)) |= (tamanho & 0x00FF)); 
 } 
 
 char * meualoc::aloca_aux(int pos_livre, unsigned short tamanho) {
 	seta_tamanho(tamanho, this->livre[pos_livre].first);
-	seta_tamanho(MAGICO, this->livre[pos_livre].first);
+	seta_magico(MAGICO, this->livre[pos_livre].first);
 
 	char * _memoria = this->livre[pos_livre].first;
 
@@ -121,10 +121,10 @@ int meualoc::libera(char* ponteiro) {
 	if(!ponteiro || ponteiro > this->tamanhoMemoria + this->memoria || ponteiro - 4 < this->memoria) {
 		return 0;
 	}
-	ponteiro -= 2;
+	ponteiro -= 4;
 	unsigned short magico = ((ponteiro[2] & 0xFF) << 8) + (ponteiro[3] & 0xFF);
 	if(magico == MAGICO) {
-		unsigned short _tam = ((ponteiro[0] & 0xFF) << 8) + (ponteiro[1] & 0xFF) + 4;
+		unsigned short _tam = ((ponteiro[0] & 0xFF) >> 8) + (ponteiro[1] & 0xFF) + 4;
 		this->livre.push_back(std::make_pair(ponteiro, _tam));
 		ponteiro[0] = ponteiro[1] = ponteiro[2] = ponteiro[3] = 0; // Apagar cabeçalho
 		return _tam;

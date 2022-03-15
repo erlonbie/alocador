@@ -12,8 +12,11 @@ int main(int argc, char *argv[])
     char *D = alocador->aloca(50);
 
 	alocador->libera(B);
+    alocador->imprimeDados();
 	alocador->libera(D);
+    alocador->imprimeDados();
 	alocador->libera(C);
+    alocador->imprimeDados();
 	
 	int tam = 20;
     if (alocador->verifica(B,tam))
@@ -21,5 +24,9 @@ int main(int argc, char *argv[])
     else
         printf("B não está alocado com pelo menos %d bytes.\n", tam);
 
+    if (alocador->verifica(A,10))
+        printf("A está alocado com pelo menos %d bytes!\n", tam);
+    else
+        printf("A não está alocado com pelo menos %d bytes.\n", tam);
 	return 0;
 }

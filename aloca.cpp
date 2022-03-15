@@ -124,11 +124,11 @@ int meualoc::libera(char* ponteiro) {
 	ponteiro -= 4;
 	unsigned short magico = ((ponteiro[2] & 0xFF) << 8) + (ponteiro[3] & 0xFF);
 	if(magico == MAGICO) {
-		unsigned short _tam = ((ponteiro[0] & 0xFF) >> 8) + (ponteiro[1] & 0xFF) + 4;
+		unsigned short _tam = ((ponteiro[0] & 0xFF) << 8) + (ponteiro[1] & 0xFF);
 		this->livre.push_back(std::make_pair(ponteiro, _tam));
 		ponteiro[0] = ponteiro[1] = ponteiro[2] = ponteiro[3] = 0; // Apagar cabeçalho
-		return _tam;
 		coalesce();
+		return _tam;		
 	}
 	return 0;
 }
@@ -137,6 +137,10 @@ bool myfunction (std::pair<char *, int> p1, std::pair<char *, int> p2) { return 
 
 void meualoc::coalesce() {
 	std::sort(this->livre.begin(), this->livre.end(), myfunction);
+	
+	for(int i = 0; i < this->livre.size(); i++){
+		std::cout << "ponteiro: " << (void*) this->livre[i].first << " tamanho: " << this->livre[i].second << "\n";
+	}
 	
 	for (int i = 1; i < this->livre.size(); i++) {
 		if((this->livre[i].first) == (this->livre[i-1].first + this->livre[i-1].second)) {
@@ -148,20 +152,32 @@ void meualoc::coalesce() {
 }
 
 char * meualoc::verifica(char* ponteiro,int posicao) {
-	int tam = this->livre.size();
-	bool _livre = false;
+	if (!ponteiro || ponteiro - 4 < memoria || ponteiro > memoria + tamanhoMemoria) return NULL; 
 
-	for(int i = 0; i < tam; i++){
-		if(this->livre[i].first <= ponteiro+posicao && ponteiro+posicao < this->livre[i].first + this->livre[i].second){
-			_livre = true;
-			break;
-		}
-	}
-	if(!_livre){
-		return ponteiro+posicao;
-	}
+	ponteiro -= 4;	 
+	unsigned short tam = ((ponteiro[0] & 0xFF) << 8) + (ponteiro[1] & 0xFF);
+	unsigned short magico = ((ponteiro[2] & 0xFF) << 8) + (ponteiro[3] & 0xFF);
+	ponteiro += 4; 
+
+	if (magico == MAGICO && tam >= posicao) return ponteiro;
 	return NULL;
 }
+
+void meualoc::imprimeDados(){
+	bool _livre = false;
+	int tam = this->livre.size();
+	int somatorio = 0, maior_tamanho = 0;
+	
+	for(int i = 0; i < tam; i++){
+		if(this->livre[i].second > maior_tamanho){
+			maior_tamanho = this->livre[i].second;
+		}
+		somatorio += this->livre[i].second;
+	}
+	std::cout << "Numero de elementos: " << tam << "\n";
+	std::cout << "Maior tamanho: " << maior_tamanho << "\n";
+	std::cout << "Media dos tamanhos: " << somatorio/tam << "\n";
+}	
 
 meualoc::~meualoc()
 {

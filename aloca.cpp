@@ -43,17 +43,24 @@ void seta_magico(uint tamanho, char * pos) {
 } 
 
 char * meualoc::aloca_aux(int pos_livre, unsigned short tamanho) {
-	seta_tamanho(tamanho, this->livre[pos_livre].first);
+	seta_tamanho(tamanho-4, this->livre[pos_livre].first);
 	seta_magico(MAGICO, this->livre[pos_livre].first);
 
 	char * _memoria = this->livre[pos_livre].first;
 
 	if (tamanho == this->livre[pos_livre].second) {
 		this->livre.erase(this->livre.begin() + pos_livre);
+
 	} else {
 		this->livre[pos_livre].first += tamanho;
 		this->livre[pos_livre].second -= tamanho;
 	}
+	if(pos_livre + 1 == this->livre.size()) {
+		this->nextLivre = 0;
+	} else{
+		this->nextLivre = pos_livre + 1;
+	}
+	std::cout << "NextLivre: " << this->nextLivre << std::endl;
 
 	return _memoria + 4;
 }
@@ -81,10 +88,10 @@ char * meualoc::bestfit(unsigned short tamanho) {
 	int i, pos_livre = 0;
 	bool _livre = false;
 	int tam = this->livre.size();
-	int melhor_tamanho = 0;
+	int melhor_tamanho = INT_MAX;
 	
 	for(int i = 0; i < tam; i++){
-		if(tamanho_total >= this->livre[i].second && (melhor_tamanho > this->livre[i].second)){
+		if(tamanho_total <= this->livre[i].second && (melhor_tamanho > this->livre[i].second)){
 			melhor_tamanho = this->livre[i].second;
 			pos_livre = i;
 			_livre = true;
@@ -102,19 +109,27 @@ char * meualoc::nextfit(unsigned short tamanho) {
 	int pos_livre = 0;
 	int tam = this->livre.size();
 
-	for (int i = 0; i < tam; i++){
+	for (int i = this->nextLivre; i < tam; i++){
 		if (tamanho_total <= this->livre[i].second) {
 			_livre = true;
-			this->nextLivre = i;
+			pos_livre = i;
 			break;
 		}
 	}
 	
 	if(!_livre) {
-		return NULL;
+		for (int i = 0; i < this->nextLivre; i++) {
+			if (tamanho_total <= this->livre[i].second) {
+				_livre = true;
+				pos_livre = i;
+				break;
+			}
+		}
+
+		if(!_livre) return NULL;
 	}
 
-	return aloca_aux(this->nextLivre, tamanho_total);
+	return aloca_aux(pos_livre, tamanho_total);
 }
 
 int meualoc::libera(char* ponteiro) {
@@ -124,8 +139,8 @@ int meualoc::libera(char* ponteiro) {
 	ponteiro -= 4;
 	unsigned short magico = ((ponteiro[2] & 0xFF) << 8) + (ponteiro[3] & 0xFF);
 	if(magico == MAGICO) {
-		unsigned short _tam = ((ponteiro[0] & 0xFF) << 8) + (ponteiro[1] & 0xFF);
-		this->livre.push_back(std::make_pair(ponteiro, _tam));
+			unsigned short _tam = ((ponteiro[0] & 0xFF) << 8) + (ponteiro[1] & 0xFF) + 4;
+			this->livre.push_back(std::make_pair(ponteiro, _tam));
 		ponteiro[0] = ponteiro[1] = ponteiro[2] = ponteiro[3] = 0; // Apagar cabeçalho
 		coalesce();
 		return _tam;		
@@ -169,6 +184,7 @@ void meualoc::imprimeDados(){
 	int somatorio = 0, maior_tamanho = 0;
 	
 	for(int i = 0; i < tam; i++){
+		std::cout << "Posicao: " << i << " " << "Tamanho: " << this->livre[i].second << std::endl;
 		if(this->livre[i].second > maior_tamanho){
 			maior_tamanho = this->livre[i].second;
 		}
